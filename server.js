@@ -1,6 +1,6 @@
 var express = require('express');
 var bodyParser = require('body-parser')
-// var mongoose = require('mongoose');
+var cookieParser = require('cookie-parser');
 
 var app = express();
 var http = require('http').Server(app);
@@ -11,70 +11,60 @@ let ser = require('./service');
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}))
+app.use(cookieParser());
+session = {}
 
-// var Message = mongoose.model('Message',{
-//   name : String,
-//   message : String
-// })
-var Message = ''
-
-// var dbUrl = 'mongodb://amkurian:amkurian1@ds257981.mlab.com:57981/simple-chat'
-
-app.get('/messages', (req, res) => {
-
-  console.log("------Start Session-------")
-  ser.startSession();
-
-  // console.log("------get Message-------")
-  // ser.getMessage();
-
-  // Message.find({},(err, messages)=> {
-  //   res.send(messages);
-  // })
-})
-
-
-app.get('/messages/:user', (req, res) => {
-  var user = req.params.user
-  Message.find({name: user},(err, messages)=> {
-    res.send(messages);
-  })
-})
-
-
-app.post('/messages', async (req, res) => {
-  try{
-    var message = new Message(req.body);
-
-    var savedMessage = await message.save()
-      console.log('saved');
-
-    var censored = await Message.findOne({message:'badword'});
-      if(censored)
-        await Message.remove({_id: censored.id})
-      else
-        io.emit('message', req.body);
-      res.sendStatus(200);
+app.get('/startSession', async (req, res) => { 
+  console.log('----------Start-----------')
+  const check_session = req.cookies['session'];
+  if(!check_session){
+    session_data = await ser.startSession();
+    session.id = session_data.data.entity.id;
+    session.selfUri = session_data.data.entity.selfUri;
+    session.clientToken = session_data.data.clientToken;
+    res.cookie('session', session, {maxAge: 360000});
+    console.log('session create', session)
+  }else{
+    session = check_session
+    console.log('Used session', session)
   }
-  catch (error){
-    res.sendStatus(500);
+
+  console.log('----------GET Message-----------')
+  message_data = await ser.getMessage(session);
+  messages = message_data.data.messages;
+  console.log(messages)
+  
+  counter = 0;
+  result = [];
+  messages.forEach((val, index) => {
+    if(val.type == 'Text'){
+      result[counter] = {}
+      result[counter].user = val.from.nickname;
+      result[counter].text = val.text;
+      counter++;
+    }
+  });
+  res.send(result);
+})
+
+app.post('/sendMessage', async (req, res) => { 
+  try {
+    console.log('----------sendMessage-----------')
+    message = req.body.message
+    console.log(message);
+    data = await ser.sendMessage(session, message);
+    // console.log(session)
+  } catch (error) {
     return console.log('error',error);
-  }
-  finally{
+  } finally {
     console.log('Message Posted')
   }
-
 })
-
 
 
 io.on('connection', () =>{
   console.log('a user is connected')
 })
-
-// mongoose.connect(dbUrl ,{useNewUrlParser: true} ,(err) => {
-//   console.log('mongodb connected',err);
-// })
 
 var server = http.listen(3000, () => {
   console.log('server is running on port', server.address().port);

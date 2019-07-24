@@ -14,40 +14,39 @@
     <div class="jumbotron">
         <h1 class="display-4">Send Message</h1>
         <br>
-        <input id = "name" class="form-control" placeholder="Name">
+        <div id="messages">
+
+        </div>
         <br>
         <textarea id = "message" class="form-control" placeholder="Your Message Here"></textarea>
         <br>
         <button id="send" class="btn btn-success">Send</button>
     </div>
-    <div id="messages">
-
-    </div>
+    
 </div>
 <script>
    var socket = io();
     $(() => {
         $("#send").click(()=>{
-            sendMessage({name: $("#name").val(), message: $("#message").val()});
+            sendMessage({message: $("#message").val()});
+            $("#messages").append(`<h4> Me </h4><p> ${$("#message").val()} </p>`)
+            $("#message").val('');
         })
-
-        getMessages()
+        startSession()
     })
 
-    socket.on('message', addMessages)
-
     function addMessages(message){
-        $("#messages").append(`<h4> ${message.name} </h4> <p> ${message.message} </p>`)
+      $("#messages").append(`<h4> ${message.user} </h4><p> ${message.text} </p>`)
     }
 
-    function getMessages(){
-      $.get('http://localhost:3000/messages', (data) => {
+    function startSession(){
+      $.get('http://localhost:3000/startSession', (data) => {
         data.forEach(addMessages);
       })
     }
 
     function sendMessage(message){
-      $.post('http://localhost:3000/messages', message)
+      $.post('http://localhost:3000/sendMessage', message)
     }
 </script>
 </body>
