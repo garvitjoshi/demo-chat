@@ -4,7 +4,6 @@ var cookieParser = require('cookie-parser');
 
 var app = express();
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
 
 let ser = require('./service');
 
@@ -29,6 +28,27 @@ app.get('/startSession', async (req, res) => {
     console.log('Used session', session)
   }
 
+  // console.log('----------GET Message-----------')
+  // message_data = await ser.getMessage(session);
+  // messages = message_data.data.messages;
+  // console.log(messages)
+  
+  // counter = 0;
+  // result = [];
+  // messages.forEach((val, index) => {
+  //   if(val.type == 'Text'){
+  //     result[counter] = {}
+  //     result[counter].user = val.from.nickname;
+  //     result[counter].text = val.text;
+  //     counter++;
+  //   }
+  // });
+  // res.send(result);
+
+  // getMessage()
+})
+
+app.get('/getMessages', async (req, res) => {
   console.log('----------GET Message-----------')
   message_data = await ser.getMessage(session);
   messages = message_data.data.messages;
@@ -53,17 +73,16 @@ app.post('/sendMessage', async (req, res) => {
     message = req.body.message
     console.log(message);
     data = await ser.sendMessage(session, message);
+    // console.log(data);
+    if(data.status.code == 'SUCCESS'){
+      console.log('Message Posted')
+    }else{
+      console.log('Message Failed')
+    }
     // console.log(session)
   } catch (error) {
     return console.log('error',error);
-  } finally {
-    console.log('Message Posted')
   }
-})
-
-
-io.on('connection', () =>{
-  console.log('a user is connected')
 })
 
 var server = http.listen(3000, () => {
