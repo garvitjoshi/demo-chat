@@ -22,7 +22,7 @@ app.get('/startSession', async (req, res) => {
     session.id = session_data.data.entity.id;
     session.selfUri = session_data.data.entity.selfUri;
     session.clientToken = session_data.data.clientToken;
-    res.cookie('session', session, {maxAge: 360000});
+    res.cookie('session', session, {maxAge: 3600000});
     console.log('session create', session)
   }else{
     session = check_session

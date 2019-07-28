@@ -1,15 +1,23 @@
 const axios = require('axios')
 var qs = require('querystring');
 
+user = { 'firstName': 'Sanjay',
+'lastName': 'Saha',
+'endpoint': 'oasis_chat',
+'ChatProfile': 'Oasis_Chat_UAT',
+'email': 'ssanjay@vmware.com',
+'stream': 'uat',
+'nickname': 'Sanjay' }
+
 startSession = async () => {
     url = 'https://nexus.socialanalytics.genesyscloud.com/nexus/v3/chat/sessions'
-    data = qs.stringify({ 'data[firstName]': 'Sanjay',
-    'data[lastName]': 'Saha',
-    'data[endpoint]': 'oasis_chat',
-    'data[ChatProfile]': 'Oasis_Chat_UAT',
-    'data[email]': 'ssanjay@vmware.com',
-    'data[stream]': 'uat',
-    'data[nickname]': 'Sanjay' });
+    data = qs.stringify({ 'data[firstName]': user.firstName,
+    'data[lastName]': user.lastName,
+    'data[endpoint]': user.endpoint,
+    'data[ChatProfile]': user.ChatProfile,
+    'data[email]': user.email,
+    'data[stream]': user.stream,
+    'data[nickname]': user.nickname });
     config = {
         headers: {
             'x-api-key': 'b39dced7-8241-49a6-a4d3-f52eb797234b',
